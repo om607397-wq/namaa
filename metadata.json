@@ -1,0 +1,7 @@
+{
+  "name": "نماء - رفيق النمو",
+  "description": "مساحتك الخاصة للنمو المتوازن: عبادة، علم، وتنظيم حياة.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
