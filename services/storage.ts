@@ -20,7 +20,8 @@ import {
   FootballProfile,
   FootballTrainingLog,
   FeatureId,
-  ChatMessage
+  ChatMessage,
+  LocationConfig
 } from '../types';
 import { ADHKAR_DATA, DhikrItem } from '../data/adhkarData';
 
@@ -46,6 +47,8 @@ const KEYS = {
   FOOTBALL_LOGS: 'injaz_football_logs',
   ENABLED_FEATURES: 'injaz_enabled_features',
   CHAT_HISTORY: 'injaz_chat_history',
+  ADHKAR_CONTENT: 'injaz_adhkar_content',
+  LOCATION_CONFIG: 'injaz_location_config', // New Key
 };
 
 // Helper to get today's date string YYYY-MM-DD
@@ -355,6 +358,15 @@ export const clearChatHistory = () => {
 export const getAdhkarByCategory = (category: string): DhikrItem[] => {
   // Always return from file source
   return ADHKAR_DATA[category] || [];
+};
+
+// --- Location Storage ---
+export const getLocationConfig = (): LocationConfig | null => {
+  return get(KEYS.LOCATION_CONFIG, null);
+};
+
+export const saveLocationConfig = (config: LocationConfig) => {
+  set(KEYS.LOCATION_CONFIG, config);
 };
 
 // --- Gamification Score ---

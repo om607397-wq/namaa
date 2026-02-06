@@ -359,7 +359,7 @@ export const Settings: React.FC = () => {
                 {/* Social Links */}
                 <div className="flex items-center gap-3">
                    <a 
-                     href="https://facebook.com/omar.basuoney" 
+                     href="https://www.facebook.com/omar.asuoney" 
                      target="_blank" 
                      rel="noopener noreferrer"
                      className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-white hover:text-blue-600 transition-all hover:scale-110 shadow-lg"
@@ -369,7 +369,7 @@ export const Settings: React.FC = () => {
                    </a>
                    
                    <a 
-                     href="https://instagram.com/omarbasuoney" 
+                     href="https://www.instagram.com/omar_basuoney4/" 
                      target="_blank" 
                      rel="noopener noreferrer"
                      className="w-12 h-12 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 text-white flex items-center justify-center hover:opacity-90 transition-all hover:scale-110 shadow-lg"
@@ -379,7 +379,7 @@ export const Settings: React.FC = () => {
                    </a>
                    
                    <a 
-                     href="tel:+201000000000" 
+                     href="https://wa.me/201032832715" 
                      className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center hover:bg-white hover:text-emerald-500 transition-all hover:scale-110 shadow-lg"
                      title="Contact"
                    >

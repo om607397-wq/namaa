@@ -173,6 +173,14 @@ export interface ChatMessage {
   timestamp: number;
 }
 
+// --- Location Config ---
+export interface LocationConfig {
+  name: string;
+  lat: number;
+  lng: number;
+  isManual: boolean;
+}
+
 // --- Customization ---
 export type FeatureId = 
   'ramadan' | 'football' | 'prayers' | 'adhkar' | 'study' | 

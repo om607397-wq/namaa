@@ -232,11 +232,12 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center md:items-end gap-8">
+        {/* Changed layout from md:flex-row to lg:flex-row to prevent clipping on tablets */}
+        <div className="relative z-10 flex flex-col lg:flex-row justify-between items-center lg:items-end gap-8">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-right w-full">
             {/* Avatar Display */}
             <div 
-              className="relative w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-emerald-300 to-teal-500 shadow-xl shrink-0 group-hover:scale-105 transition-transform duration-300"
+              className="relative w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-emerald-300 to-teal-500 shadow-xl shrink-0 group-hover:scale-105 transition-transform duration-300 mx-auto md:mx-0"
               style={{ transform: `translate(${mousePos.x * 15}px, ${mousePos.y * 15}px)` }}
             >
                <div className="w-full h-full rounded-full overflow-hidden bg-white/90 border-4 border-transparent">
@@ -251,13 +252,13 @@ export const Dashboard: React.FC = () => {
                </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-emerald-100 text-xs font-medium tracking-wide shadow-sm">
+            <div className="space-y-2 w-full md:w-auto">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-emerald-100 text-xs font-medium tracking-wide shadow-sm mx-auto md:mx-0">
                 <Clock size={12} />
                 <span>{todayDate}</span>
               </div>
               
-              <h2 className="text-3xl md:text-5xl font-black leading-tight tracking-tight drop-shadow-md">
+              <h2 className="text-3xl md:text-5xl font-black leading-tight tracking-tight drop-shadow-md flex justify-center md:justify-start">
                 {isEditingName ? (
                   <input 
                     autoFocus
@@ -270,7 +271,7 @@ export const Dashboard: React.FC = () => {
                 ) : (
                   <div 
                     onClick={() => setIsEditingName(true)} 
-                    className="cursor-pointer hover:text-emerald-200 transition-colors flex items-center justify-center md:justify-start gap-2"
+                    className="cursor-pointer hover:text-emerald-200 transition-colors flex items-center gap-2"
                   >
                      <span>صباح الخير،</span>
                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-teal-100">
@@ -280,14 +281,14 @@ export const Dashboard: React.FC = () => {
                 )}
               </h2>
               
-              <p className="text-emerald-100/90 text-lg font-medium max-w-lg leading-relaxed">
+              <p className="text-emerald-100/90 text-lg font-medium max-w-lg leading-relaxed mx-auto md:mx-0">
                 {getMotivation()}
               </p>
             </div>
           </div>
           
           <div 
-            className="flex items-center justify-center shrink-0"
+            className="flex items-center justify-center shrink-0 w-full lg:w-auto"
             style={{ transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20}px)` }}
           >
              <div className="bg-white/10 backdrop-blur-lg p-5 rounded-3xl border border-white/20 flex flex-col items-center min-w-[120px] hover:bg-white/20 transition-all duration-300 shadow-xl group/score">
