@@ -19,8 +19,10 @@ import {
   QuranTaskConfig,
   FootballProfile,
   FootballTrainingLog,
-  FeatureId
+  FeatureId,
+  ChatMessage
 } from '../types';
+import { ADHKAR_DATA, DhikrItem } from '../data/adhkarData';
 
 const KEYS = {
   PROFILE: 'injaz_profile',
@@ -42,7 +44,8 @@ const KEYS = {
   RAMADAN_CONFIG: 'injaz_ramadan_config',
   FOOTBALL_PROFILE: 'injaz_football_profile',
   FOOTBALL_LOGS: 'injaz_football_logs',
-  ENABLED_FEATURES: 'injaz_enabled_features', // New Key
+  ENABLED_FEATURES: 'injaz_enabled_features',
+  CHAT_HISTORY: 'injaz_chat_history',
 };
 
 // Helper to get today's date string YYYY-MM-DD
@@ -85,7 +88,6 @@ export const getAllAppData = () => {
 
 export const restoreAppData = (data: Record<string, any>) => {
   Object.keys(data).forEach(key => {
-    // Only restore keys that belong to our app
     if (Object.values(KEYS).includes(key)) {
       if (typeof data[key] === 'object') {
         localStorage.setItem(key, JSON.stringify(data[key]));
@@ -98,7 +100,6 @@ export const restoreAppData = (data: Record<string, any>) => {
 
 
 // --- Existing Functions ---
-// Update default to include avatar and bookmark
 export const getProfile = (): UserProfile => get(KEYS.PROFILE, { 
   name: 'يا بطل', 
   streak: 0, 
@@ -249,7 +250,6 @@ export const savePrayerLog = (log: PrayerLog) => {
   set(KEYS.PRAYERS, logs);
 };
 
-// --- Habits (Customizable Defaults) ---
 export const getHabitsConfig = (): HabitConfig[] => get(KEYS.HABITS_CONFIG, [
   { id: '1', name: 'أكل صحي', emoji: '🥗' }
 ]);
@@ -277,8 +277,6 @@ export const saveFocusList = (list: FocusList) => {
   set(KEYS.FOCUS, logs);
 };
 
-// --- Ramadan Storage ---
-
 export const getRamadanDay = (date: string): RamadanDay => {
   const logs = get<Record<string, RamadanDay>>(KEYS.RAMADAN_LOGS, {});
   return logs[date] || { date, fasting: false, tarawih: false, qiyam: false, iftarInvite: false, goodDeed: '' };
@@ -301,7 +299,6 @@ export const saveRamadanConfig = (config: RamadanConfig) => {
   set(KEYS.RAMADAN_CONFIG, config);
 };
 
-// --- Football Storage ---
 export const getFootballProfile = (): FootballProfile => {
   return get(KEYS.FOOTBALL_PROFILE, { position: null, trainingDays: [], level: 1 });
 };
@@ -330,11 +327,8 @@ export const saveFootballLog = (log: FootballTrainingLog) => {
   set(KEYS.FOOTBALL_LOGS, logs);
 };
 
-// --- Features Customization ---
 export const getEnabledFeatures = (): FeatureId[] => {
   const features = get<FeatureId[] | null>(KEYS.ENABLED_FEATURES, null);
-  // FIX: Instead of returning null and forcing redirect, return a default set.
-  // This allows users to skip setup if they want, and customize later.
   if (!features) {
     return ['prayers', 'quran', 'habits', 'study', 'finance', 'focus', 'tasbeeh', 'adhkar', 'history']; 
   }
@@ -345,16 +339,30 @@ export const saveEnabledFeatures = (features: FeatureId[]) => {
   set(KEYS.ENABLED_FEATURES, features);
 };
 
+export const getChatHistory = (): ChatMessage[] => {
+  return get(KEYS.CHAT_HISTORY, []);
+};
+
+export const saveChatHistory = (history: ChatMessage[]) => {
+  set(KEYS.CHAT_HISTORY, history);
+};
+
+export const clearChatHistory = () => {
+  localStorage.removeItem(KEYS.CHAT_HISTORY);
+};
+
+// --- Adhkar Content (Static File Source) ---
+export const getAdhkarByCategory = (category: string): DhikrItem[] => {
+  // Always return from file source
+  return ADHKAR_DATA[category] || [];
+};
 
 // --- Gamification Score ---
 export const calculateDailyScore = (date: string): number => {
   let score = 0;
   const maxScore = 100;
 
-  // 1. Prayers (Max 40) - Increased weight
-  // Fard: 6 pts * 5 = 30
-  // Sunnah: 1 pts * 5 = 5
-  // Adhkar: 1 pts * 5 = 5
+  // 1. Prayers (Max 40)
   const prayers = getPrayerLog(date);
   const prayerScores: Record<PrayerStatus, number> = { 'mosque': 6, 'ontime': 6, 'late': 3, 'missed': 0, 'none': 0 };
   
@@ -371,7 +379,6 @@ export const calculateDailyScore = (date: string): number => {
   if (prayers.asrAdhkar) score += 1;
   if (prayers.maghribAdhkar) score += 1;
   if (prayers.ishaAdhkar) score += 1;
-
 
   // 2. Quran (Max 20)
   const quran = getQuranLog(date);

@@ -1,6 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Download, Upload, AlertTriangle, Settings as SettingsIcon, Cloud, Check, LogOut, User, AlertCircle, LayoutTemplate, Facebook, Instagram, Phone, Code, Heart, Bell } from 'lucide-react';
+import { 
+  Download, Upload, AlertTriangle, Settings as SettingsIcon, Cloud, Check, 
+  LogOut, User, AlertCircle, LayoutTemplate, Bell, Facebook, Instagram, Phone, 
+  Code, Heart 
+} from 'lucide-react';
 import { 
   uploadDataToCloud, 
   downloadDataFromCloud,
@@ -33,11 +37,17 @@ export const Settings: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
+  // Safe helper defined at component level
+  const getLocalProfile = () => {
+     try {
+       return JSON.parse(localStorage.getItem('injaz_profile') || '{}');
+     } catch { return {}; }
+  };
+
   const handleExport = () => {
     const data: Record<string, any> = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      // Keep internal keys as 'injaz_' for backward compatibility with existing data
       if (key && key.startsWith('injaz_')) {
         data[key] = localStorage.getItem(key);
       }
@@ -47,7 +57,6 @@ export const Settings: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    // Export filename updated to Namaa
     a.download = `namaa_backup_${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
@@ -77,7 +86,7 @@ export const Settings: React.FC = () => {
            window.location.reload();
         }
       } catch (err) {
-        alert('حدث خطأ في قراءة الملف. تأكد أنه ملف نسخ احتياطي صحيح.');
+        alert('حدث خطأ في قراءة الملف.');
       }
     };
     reader.readAsText(file);
@@ -96,9 +105,8 @@ export const Settings: React.FC = () => {
   };
 
   const handleNotificationRequest = async () => {
-    // Check if previously denied
     if (Notification.permission === 'denied') {
-      alert('⚠️ المتصفح يحظر الإشعارات لهذا الموقع.\n\nلتفعيلها:\n1. اضغط على أيقونة القفل 🔒 أو الإعدادات بجانب رابط الموقع في الأعلى.\n2. اذهب إلى "الأذونات" أو "Permissions".\n3. اسمح بالإشعارات (Notifications).\n4. قم بتحديث الصفحة.');
+      alert('⚠️ المتصفح يحظر الإشعارات لهذا الموقع.\n\nيرجى تفعيلها من إعدادات المتصفح.');
       return;
     }
 
@@ -107,18 +115,16 @@ export const Settings: React.FC = () => {
       setNotifPermission(result);
       if (result === 'granted') {
         showToast('تم تفعيل التنبيهات بنجاح ✅', 'success');
-        // Test notification
         new Notification('نماء', { body: 'تم تفعيل التنبيهات بنجاح!' });
       } else {
-        showToast('تم رفض التنبيهات. يرجى السماح بها من المتصفح.', 'error');
+        showToast('تم رفض التنبيهات.', 'error');
       }
     } catch (e) {
       console.error(e);
-      showToast('حدث خطأ غير متوقع أثناء طلب الإذن', 'error');
+      showToast('حدث خطأ غير متوقع', 'error');
     }
   };
 
-  // --- Sync Handlers ---
   const handleCloudOperation = async (operation: 'upload' | 'download') => {
     if (!user) return;
     setIsSyncing(true);
@@ -128,16 +134,17 @@ export const Settings: React.FC = () => {
     try {
       if (operation === 'upload') {
         await uploadDataToCloud();
-        setSyncStatus(`تم رفع بياناتك (${getProfile().name}) للسحابة بنجاح ✅`);
+        const profile = getLocalProfile();
+        setSyncStatus(`تم رفع بياناتك (${profile.name || 'المستخدم'}) للسحابة بنجاح ✅`);
       } else {
-        if (!confirm('هذا سيستبدل بياناتك الحالية على هذا الجهاز بالبيانات المحفوظة في حسابك. هل أنت متأكد؟')) {
+        if (!confirm('هذا سيستبدل بياناتك الحالية. هل أنت متأكد؟')) {
           setIsSyncing(false);
           setSyncStatus('');
           return;
         }
         const success = await downloadDataFromCloud();
         if (success) {
-          alert('تم استعادة بيانات حسابك بنجاح! سيتم تحديث الصفحة.');
+          alert('تم استعادة البيانات بنجاح!');
           window.location.reload();
         } else {
           setSyncStatus('لا توجد بيانات محفوظة لهذا الحساب.');
@@ -147,20 +154,13 @@ export const Settings: React.FC = () => {
       console.error(error);
       if (error.code === 'permission-denied') {
         setPermissionError(true);
-        setSyncStatus('خطأ: لا تملك صلاحية الوصول لقاعدة البيانات.');
+        setSyncStatus('خطأ: لا تملك صلاحية.');
       } else {
-        setSyncStatus(`فشل ${operation === 'upload' ? 'الرفع' : 'التنزيل'}: ${error.message || 'خطأ غير معروف'}`);
+        setSyncStatus(`فشل العملية: ${error.message || 'خطأ غير معروف'}`);
       }
     }
     setIsSyncing(false);
   };
-
-  // Helper to extract Profile Name safely
-  const getProfile = () => {
-     try {
-       return JSON.parse(localStorage.getItem('injaz_profile') || '{}');
-     } catch { return {}; }
-  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-8 pb-12 animate-fade-in">
@@ -359,7 +359,7 @@ export const Settings: React.FC = () => {
                 {/* Social Links */}
                 <div className="flex items-center gap-3">
                    <a 
-                     href="https://www.facebook.com/omar.asuoney?locale=ar_AR" 
+                     href="https://facebook.com/omar.basuoney" 
                      target="_blank" 
                      rel="noopener noreferrer"
                      className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-white hover:text-blue-600 transition-all hover:scale-110 shadow-lg"
@@ -367,8 +367,9 @@ export const Settings: React.FC = () => {
                    >
                       <Facebook size={24} />
                    </a>
+                   
                    <a 
-                     href="https://www.instagram.com/omar_basuoney4/" 
+                     href="https://instagram.com/omarbasuoney" 
                      target="_blank" 
                      rel="noopener noreferrer"
                      className="w-12 h-12 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 text-white flex items-center justify-center hover:opacity-90 transition-all hover:scale-110 shadow-lg"
@@ -376,8 +377,9 @@ export const Settings: React.FC = () => {
                    >
                       <Instagram size={24} />
                    </a>
+                   
                    <a 
-                     href="https://wa.me/201032832715?text=Hello" 
+                     href="tel:+201000000000" 
                      className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center hover:bg-white hover:text-emerald-500 transition-all hover:scale-110 shadow-lg"
                      title="Contact"
                    >
