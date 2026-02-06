@@ -181,6 +181,34 @@ export interface LocationConfig {
   isManual: boolean;
 }
 
+// --- Quran API Types ---
+export interface QuranChapter {
+  id: number;
+  revelation_place: string;
+  revelation_order: number;
+  bismillah_pre: boolean;
+  name_simple: string;
+  name_complex: string;
+  name_arabic: string;
+  verses_count: number;
+  pages: number[];
+  translated_name: {
+    language_name: string;
+    name: string;
+  };
+}
+
+export interface QuranVerse {
+  id: number;
+  verse_key: string;
+  text_uthmani: string;
+}
+
+export interface QuranTafsir {
+  resource_id: number;
+  text: string;
+}
+
 // --- Customization ---
 export type FeatureId = 
   'ramadan' | 'football' | 'prayers' | 'adhkar' | 'study' | 
