@@ -6,12 +6,16 @@ import {
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { saveQuranBookmark, getProfile } from '../services/storage';
+import * as ReactRouterDOM from 'react-router-dom';
 
 // API Configuration
 const BASE_URL = 'https://api.quran.com/api/v4';
 
+const { useNavigate } = ReactRouterDOM;
+
 export const FullQuran: React.FC = () => {
   const { showToast } = useToast();
+  const navigate = useNavigate();
   
   // State
   const [chapters, setChapters] = useState<QuranChapter[]>([]);
@@ -211,6 +215,14 @@ export const FullQuran: React.FC = () => {
       {/* 1. Header Toolbar (Standard App Colors) */}
       <div className="bg-white dark:bg-dark-900 p-3 md:p-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-800 shadow-sm z-30 shrink-0">
          <div className="flex items-center gap-3">
+            {/* Back Button added */}
+            <button 
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-dark-800 rounded-xl transition-colors text-gray-500"
+              title="رجوع"
+            >
+               <ArrowRight size={24} />
+            </button>
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="p-2 hover:bg-gray-100 dark:hover:bg-dark-800 rounded-xl transition-colors"

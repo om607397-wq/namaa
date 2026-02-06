@@ -21,7 +21,9 @@ import {
   FootballTrainingLog,
   FeatureId,
   ChatMessage,
-  LocationConfig
+  LocationConfig,
+  AdhkarProgress,
+  DailyToDo
 } from '../types';
 import { ADHKAR_DATA, DhikrItem } from '../data/adhkarData';
 
@@ -48,7 +50,9 @@ const KEYS = {
   ENABLED_FEATURES: 'injaz_enabled_features',
   CHAT_HISTORY: 'injaz_chat_history',
   ADHKAR_CONTENT: 'injaz_adhkar_content',
-  LOCATION_CONFIG: 'injaz_location_config', // New Key
+  LOCATION_CONFIG: 'injaz_location_config',
+  ADHKAR_PROGRESS: 'injaz_adhkar_progress', // New
+  DAILY_TODO: 'injaz_daily_todo', // New
 };
 
 // Helper to get today's date string YYYY-MM-DD
@@ -280,6 +284,30 @@ export const saveFocusList = (list: FocusList) => {
   set(KEYS.FOCUS, logs);
 };
 
+// --- Adhkar Progress Storage ---
+export const getAdhkarProgress = (date: string): AdhkarProgress => {
+  const logs = get<Record<string, AdhkarProgress>>(KEYS.ADHKAR_PROGRESS, {});
+  return logs[date] || { date, completedCategories: [] };
+};
+
+export const saveAdhkarProgress = (progress: AdhkarProgress) => {
+  const logs = get<Record<string, AdhkarProgress>>(KEYS.ADHKAR_PROGRESS, {});
+  logs[progress.date] = progress;
+  set(KEYS.ADHKAR_PROGRESS, logs);
+};
+
+// --- Daily ToDo Storage ---
+export const getDailyToDo = (date: string): DailyToDo => {
+  const logs = get<Record<string, DailyToDo>>(KEYS.DAILY_TODO, {});
+  return logs[date] || { date, tasks: [] };
+};
+
+export const saveDailyToDo = (todo: DailyToDo) => {
+  const logs = get<Record<string, DailyToDo>>(KEYS.DAILY_TODO, {});
+  logs[todo.date] = todo;
+  set(KEYS.DAILY_TODO, logs);
+};
+
 export const getRamadanDay = (date: string): RamadanDay => {
   const logs = get<Record<string, RamadanDay>>(KEYS.RAMADAN_LOGS, {});
   return logs[date] || { date, fasting: false, tarawih: false, qiyam: false, iftarInvite: false, goodDeed: '' };
@@ -333,7 +361,7 @@ export const saveFootballLog = (log: FootballTrainingLog) => {
 export const getEnabledFeatures = (): FeatureId[] => {
   const features = get<FeatureId[] | null>(KEYS.ENABLED_FEATURES, null);
   if (!features) {
-    return ['prayers', 'quran', 'habits', 'study', 'finance', 'focus', 'tasbeeh', 'adhkar', 'history']; 
+    return ['prayers', 'quran', 'habits', 'study', 'finance', 'focus', 'tasbeeh', 'adhkar', 'history', 'todo']; 
   }
   return features;
 };
@@ -372,6 +400,13 @@ export const saveLocationConfig = (config: LocationConfig) => {
 // --- Gamification Score ---
 export const calculateDailyScore = (date: string): number => {
   let score = 0;
+  // Total score components:
+  // Prayers: 40
+  // Quran: 15
+  // Study: 15
+  // Habits: 10
+  // Adhkar: 10
+  // ToDo: 10
   const maxScore = 100;
 
   // 1. Prayers (Max 40)
@@ -386,39 +421,47 @@ export const calculateDailyScore = (date: string): number => {
   if (prayers.maghribSunnah) score += 1;
   if (prayers.ishaSunnah) score += 1;
 
-  if (prayers.fajrAdhkar) score += 1;
-  if (prayers.dhuhrAdhkar) score += 1;
-  if (prayers.asrAdhkar) score += 1;
-  if (prayers.maghribAdhkar) score += 1;
-  if (prayers.ishaAdhkar) score += 1;
-
-  // 2. Quran (Max 20)
+  // 2. Quran (Max 15)
   const quran = getQuranLog(date);
   const quranConfig = getQuranConfig();
   if (quranConfig.length > 0) {
     const quranDone = quran.completedTaskIds.length;
-    score += (quranDone / quranConfig.length) * 20;
+    score += (quranDone / quranConfig.length) * 15;
   }
 
-  // 3. Study (Max 20)
+  // 3. Study (Max 15)
   const study = getStudySessions().filter(s => s.date === date);
   const totalMinutes = study.reduce((acc, curr) => acc + curr.durationMinutes, 0);
-  if (totalMinutes >= 120) score += 20;
-  else if (totalMinutes > 0) score += (totalMinutes / 120) * 20;
+  if (totalMinutes >= 120) score += 15;
+  else if (totalMinutes > 0) score += (totalMinutes / 120) * 15;
 
-  // 4. Habits (Max 20)
+  // 4. Habits (Max 10)
   const habits = getDailyHabits(date);
   const habitsConfig = getHabitsConfig();
   
   let habitsScore = 0;
-  if (habits.waterCups >= 8) habitsScore += 10;
+  if (habits.waterCups >= 8) habitsScore += 5;
   
   if (habitsConfig.length > 0) {
     const doneHabits = habits.completedHabitIds.length;
-    habitsScore += (doneHabits / habitsConfig.length) * 10;
+    habitsScore += (doneHabits / habitsConfig.length) * 5;
   }
   
   score += habitsScore;
+
+  // 5. Adhkar (Max 10)
+  const adhkar = getAdhkarProgress(date);
+  // Important adhkar: morning, evening, sleep
+  const importantCats = ['morning', 'evening', 'sleep'];
+  const completedImportant = importantCats.filter(c => adhkar.completedCategories.includes(c)).length;
+  score += (completedImportant / 3) * 10;
+
+  // 6. ToDo (Max 10)
+  const todo = getDailyToDo(date);
+  if (todo.tasks.length > 0) {
+    const doneTasks = todo.tasks.filter(t => t.completed).length;
+    score += (doneTasks / todo.tasks.length) * 10;
+  }
 
   return Math.min(Math.round(score), maxScore);
 };

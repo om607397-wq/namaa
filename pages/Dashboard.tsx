@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { 
   getProfile, 
   getTodayKey, 
@@ -34,6 +34,8 @@ import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { FocusList, DailyHabits, PrayerLog, PrayerStatus, HabitConfig } from '../types';
 import { getRandomQuote } from '../data/quotes';
 import { triggerSmallConfetti } from '../services/confetti'; 
+
+const { Link } = ReactRouterDOM;
 
 const getHabitIconInfo = (key: string) => {
   switch(key) {

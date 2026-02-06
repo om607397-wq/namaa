@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { X, Check, Sparkles, Heart } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { getAppSettings } from '../services/storage';
+
+const { useLocation } = ReactRouterDOM;
 
 const DHIKR_LIST = [
   "سبحان الله",

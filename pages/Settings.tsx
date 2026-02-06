@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { 
   Download, Upload, AlertTriangle, Settings as SettingsIcon, Cloud, Check, 
   LogOut, User, AlertCircle, LayoutTemplate, Bell, Facebook, Instagram, Phone, 
@@ -13,6 +13,8 @@ import {
 } from '../services/cloud';
 import { requestNotificationPermission } from '../components/PrayerNotifier';
 import { useToast } from '../context/ToastContext';
+
+const { Link } = ReactRouterDOM;
 
 export const Settings: React.FC = () => {
   const { showToast } = useToast();

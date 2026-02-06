@@ -1,18 +1,22 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import * as ReactRouterDOM from 'react-router-dom';
 import { 
   Sun, Moon, CloudSun, Sunset, ArrowRight, Search, 
   Home, DoorOpen, Utensils, Shirt, Car, CloudRain, Wind, 
   ShieldAlert, HeartHandshake, Coins, RotateCcw, Repeat, 
   Star, Sparkles, Thermometer, Flame, HelpCircle, Frown, 
-  ThumbsUp, BookHeart, DoorClosed, Footprints
+  ThumbsUp, BookHeart, DoorClosed, Footprints, CheckCircle2
 } from 'lucide-react';
+import { getAdhkarProgress, saveAdhkarProgress, getTodayKey } from '../services/storage';
+import { triggerSmallConfetti } from '../services/confetti';
+
+const { Link } = ReactRouterDOM;
 
 const ADHKAR_TYPES = [
   { id: 'morning', label: 'أذكار الصباح', icon: Sun, color: 'amber', gradient: 'from-amber-400 to-orange-500' },
   { id: 'evening', label: 'أذكار المساء', icon: Moon, color: 'indigo', gradient: 'from-indigo-500 to-blue-600' },
-  { id: 'post_prayer', label: 'أذكار بعد الصلاة', icon: CloudSun, color: 'emerald', gradient: 'from-emerald-400 to-teal-500' },
   { id: 'sleep', label: 'أذكار النوم', icon: Moon, color: 'slate', gradient: 'from-slate-600 to-slate-800' },
+  { id: 'post_prayer', label: 'أذكار بعد الصلاة', icon: CloudSun, color: 'emerald', gradient: 'from-emerald-400 to-teal-500' },
   { id: 'waking', label: 'أذكار الاستيقاظ', icon: Sun, color: 'yellow', gradient: 'from-yellow-400 to-orange-400' },
   { id: 'home_enter', label: 'دخول المنزل', icon: Home, color: 'blue', gradient: 'from-blue-400 to-blue-600' },
   { id: 'home_exit', label: 'الخروج من المنزل', icon: Footprints, color: 'cyan', gradient: 'from-cyan-400 to-blue-500' },
@@ -40,6 +44,31 @@ const ADHKAR_TYPES = [
 
 export const Adhkar: React.FC = () => {
   const [search, setSearch] = useState('');
+  const [completed, setCompleted] = useState<string[]>([]);
+
+  useEffect(() => {
+    const progress = getAdhkarProgress(getTodayKey());
+    setCompleted(progress.completedCategories);
+  }, []);
+
+  const toggleCompletion = (e: React.MouseEvent, id: string) => {
+    e.preventDefault(); // Prevent link navigation if clicking the check button
+    e.stopPropagation();
+    
+    let newCompleted;
+    if (completed.includes(id)) {
+      newCompleted = completed.filter(c => c !== id);
+    } else {
+      newCompleted = [...completed, id];
+      triggerSmallConfetti();
+    }
+    
+    setCompleted(newCompleted);
+    saveAdhkarProgress({
+      date: getTodayKey(),
+      completedCategories: newCompleted
+    });
+  };
 
   const filteredAdhkar = ADHKAR_TYPES.filter(item => 
     item.label.includes(search)
@@ -72,32 +101,55 @@ export const Adhkar: React.FC = () => {
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filteredAdhkar.map((type) => (
-          <Link 
-            key={type.id} 
-            to={`/adhkar/${type.id}`}
-            className="group relative overflow-hidden rounded-2xl p-4 bg-white dark:bg-dark-800 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-emerald-100 dark:hover:border-emerald-900 transition-all hover:-translate-y-1"
-          >
-            {/* Background Gradient Blob */}
-            <div className={`absolute top-0 right-0 w-24 h-24 bg-${type.color}-500/10 rounded-full -mr-8 -mt-8 blur-xl group-hover:scale-150 transition-transform duration-500`}></div>
+        {filteredAdhkar.map((type) => {
+          const isDone = completed.includes(type.id);
+          
+          return (
+            <Link 
+              key={type.id} 
+              to={`/adhkar/${type.id}`}
+              className={`group relative overflow-hidden rounded-2xl p-4 shadow-sm border transition-all hover:-translate-y-1 ${
+                isDone 
+                  ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-500 dark:border-emerald-800' 
+                  : 'bg-white dark:bg-dark-800 border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-emerald-100 dark:hover:border-emerald-900'
+              }`}
+            >
+              {/* Background Gradient Blob */}
+              <div className={`absolute top-0 right-0 w-24 h-24 bg-${type.color}-500/10 rounded-full -mr-8 -mt-8 blur-xl group-hover:scale-150 transition-transform duration-500`}></div>
 
-            <div className="relative z-10 flex items-center gap-4">
-              <div className={`p-3.5 rounded-xl bg-gradient-to-br ${type.gradient} text-white shadow-md group-hover:shadow-lg transition-shadow`}>
-                <type.icon size={22} strokeWidth={2} />
-              </div>
-              
-              <div className="flex-1">
-                <h3 className="font-bold text-gray-800 dark:text-gray-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors text-sm md:text-base">
-                  {type.label}
-                </h3>
-              </div>
+              <div className="relative z-10 flex items-center gap-4">
+                <div className={`p-3.5 rounded-xl bg-gradient-to-br ${type.gradient} text-white shadow-md group-hover:shadow-lg transition-shadow`}>
+                  <type.icon size={22} strokeWidth={2} />
+                </div>
+                
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-800 dark:text-gray-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors text-sm md:text-base">
+                    {type.label}
+                  </h3>
+                </div>
 
-              <div className="text-gray-300 dark:text-gray-600 group-hover:text-emerald-500 transition-colors transform group-hover:translate-x-[-4px]">
-                <ArrowRight size={18} />
+                <div className="flex items-center gap-2">
+                   {/* Check Button */}
+                   <button
+                     onClick={(e) => toggleCompletion(e, type.id)}
+                     className={`p-2 rounded-full transition-all z-20 ${
+                        isDone 
+                          ? 'bg-emerald-500 text-white' 
+                          : 'bg-gray-100 dark:bg-dark-700 text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600'
+                     }`}
+                     title={isDone ? "تمت القراءة" : "تحديد كمقروء"}
+                   >
+                      <CheckCircle2 size={18} />
+                   </button>
+                   
+                   <div className="text-gray-300 dark:text-gray-600 group-hover:text-emerald-500 transition-colors transform group-hover:translate-x-[-4px]">
+                     <ArrowRight size={18} />
+                   </div>
+                </div>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
 
         {filteredAdhkar.length === 0 && (
           <div className="col-span-full text-center py-12">

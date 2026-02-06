@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { 
   LayoutDashboard, BookOpen, Book, Wallet, CalendarCheck, ClipboardList, 
   Smartphone, Loader2, Moon, Sun, HeartPulse, Focus, Sprout, Settings, Star, FileText,
-  Leaf, MessageCircle, Trophy, LayoutTemplate, CalendarDays, UserCircle, User
+  Leaf, MessageCircle, Trophy, LayoutTemplate, CalendarDays, UserCircle, User, CheckSquare
 } from 'lucide-react';
 import { DhikrToast } from './DhikrToast';
 import { AIChat } from './AIChat';
 import { PrayerNotifier } from './PrayerNotifier';
 import { getAppSettings, saveAppSettings, getEnabledFeatures, getProfile } from '../services/storage';
 import { FeatureId } from '../types';
+
+const { NavLink, useLocation } = ReactRouterDOM;
 
 interface NavItem {
   id: FeatureId | 'dashboard' | 'daily' | 'weekly' | 'full-quran' | 'customize' | 'history' | 'profile';
@@ -29,6 +31,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { id: 'adhkar', to: '/adhkar', label: 'الأذكار', icon: MessageCircle },
   { id: 'study', to: '/study', label: 'المذاكرة', icon: BookOpen },
   { id: 'focus', to: '/focus', label: 'التركيز', icon: Focus },
+  { id: 'todo', to: '/todo', label: 'المهام', icon: CheckSquare },
   { id: 'quran', to: '/quran', label: 'القرآن (ورد)', icon: Book },
   { id: 'quran', to: '/full-quran', label: 'المصحف', icon: FileText },
   { id: 'habits', to: '/habits', label: 'عادات', icon: HeartPulse },
@@ -232,8 +235,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </header>
         )}
 
-        {/* Scrollable Content Area - Conditional Padding */}
-        <div className={`flex-1 w-full max-w-6xl mx-auto overflow-y-auto custom-scrollbar ${isFullScreenPage ? 'p-0 pb-0' : 'p-4 md:p-8 pb-32 md:pb-8'}`}>
+        {/* Scrollable Content Area - Conditional Padding and Overflow */}
+        <div className={`flex-1 w-full max-w-6xl mx-auto custom-scrollbar ${isFullScreenPage ? 'p-0 pb-0 overflow-hidden' : 'p-4 md:p-8 pb-32 md:pb-8 overflow-y-auto'}`}>
           {children}
         </div>
         

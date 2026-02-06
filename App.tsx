@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
 import { Study } from './pages/Study';
@@ -18,14 +18,18 @@ import { Ramadan } from './pages/Ramadan';
 import { Football } from './pages/Football';
 import { Adhkar } from './pages/Adhkar';
 import { ViewAdhkar } from './pages/ViewAdhkar';
+import { TodoList } from './pages/TodoList'; // New
 import { Login } from './pages/Login';
 import { Onboarding } from './pages/Onboarding';
 import { History } from './pages/History';
 import { Profile } from './pages/Profile';
 import { subscribeToAuth, downloadDataFromCloud, uploadDataToCloud } from './services/cloud';
+import { getTodayKey } from './services/storage';
 import { SplashScreen } from './components/SplashScreen';
 import { TimerProvider } from './context/TimerContext';
 import { ToastProvider } from './context/ToastContext';
+
+const { HashRouter, Routes, Route, Navigate } = ReactRouterDOM;
 
 const AppContent: React.FC = () => {
   return (
@@ -40,6 +44,7 @@ const AppContent: React.FC = () => {
         <Route path="/prayers" element={<Prayers />} />
         <Route path="/adhkar" element={<Adhkar />} />
         <Route path="/adhkar/:type" element={<ViewAdhkar />} />
+        <Route path="/todo" element={<TodoList />} />
         <Route path="/study" element={<Study />} />
         <Route path="/focus" element={<Focus />} />
         <Route path="/quran" element={<Quran />} />
@@ -55,6 +60,26 @@ const AppContent: React.FC = () => {
       </Routes>
     </Layout>
   );
+};
+
+// Component to watch for date changes (midnight) and trigger refresh
+const DayWatcher: React.FC = () => {
+  useEffect(() => {
+    let lastDate = getTodayKey();
+    
+    const interval = setInterval(() => {
+      const currentDate = getTodayKey();
+      if (currentDate !== lastDate) {
+        console.log("Day changed! Refreshing to reset views...");
+        lastDate = currentDate;
+        // Reloading page ensures all components fetch new data for the new "Today" key
+        window.location.reload(); 
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, []);
+  return null;
 };
 
 // Auto-Save Component
@@ -137,6 +162,7 @@ const App: React.FC = () => {
     <ToastProvider>
       <TimerProvider>
         <HashRouter>
+          <DayWatcher />
           <AutoSaveHandler user={user} />
           <AppContent />
         </HashRouter>

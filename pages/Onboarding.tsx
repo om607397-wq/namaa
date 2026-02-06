@@ -1,12 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { 
   Star, Trophy, Moon, MessageCircle, BookOpen, Focus, Book, 
   HeartPulse, Wallet, Smartphone, Loader2, CalendarCheck, CheckCircle2, ArrowRight, CalendarDays
 } from 'lucide-react';
 import { FeatureId } from '../types';
 import { saveEnabledFeatures, getEnabledFeatures } from '../services/storage';
+
+const { useNavigate } = ReactRouterDOM;
 
 const FEATURES: { id: FeatureId; label: string; icon: any; desc: string; color: string }[] = [
   { id: 'ramadan', label: 'رمضان', icon: Star, desc: 'عداد، ختمة، وعبادات', color: 'bg-amber-500' },

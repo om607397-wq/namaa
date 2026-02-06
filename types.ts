@@ -209,8 +209,26 @@ export interface QuranTafsir {
   text: string;
 }
 
+// --- New Features: Adhkar & ToDo ---
+export interface AdhkarProgress {
+  date: string;
+  completedCategories: string[]; // e.g., ['morning', 'evening', 'sleep']
+}
+
+export interface ToDoTask {
+  id: string;
+  text: string;
+  completed: boolean;
+  priority: 'high' | 'medium' | 'low';
+}
+
+export interface DailyToDo {
+  date: string;
+  tasks: ToDoTask[];
+}
+
 // --- Customization ---
 export type FeatureId = 
   'ramadan' | 'football' | 'prayers' | 'adhkar' | 'study' | 
   'focus' | 'quran' | 'habits' | 'finance' | 'screentime' | 
-  'tasbeeh' | 'journaling' | 'history'; // Added 'history'
+  'tasbeeh' | 'journaling' | 'history' | 'todo'; // Added 'todo'

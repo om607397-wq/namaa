@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { ChevronRight, RefreshCw, BookOpen, Check } from 'lucide-react';
 import { DhikrItem } from '../data/adhkarData'; 
 import { getAdhkarByCategory } from '../services/storage';
+
+const { useParams, Link } = ReactRouterDOM;
 
 const TITLES: Record<string, string> = {
   'morning': 'أذكار الصباح',
