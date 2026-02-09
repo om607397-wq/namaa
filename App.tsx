@@ -18,13 +18,13 @@ import { Ramadan } from './pages/Ramadan';
 import { Football } from './pages/Football';
 import { Adhkar } from './pages/Adhkar';
 import { ViewAdhkar } from './pages/ViewAdhkar';
-import { TodoList } from './pages/TodoList'; // New
+import { TodoList } from './pages/TodoList';
 import { Login } from './pages/Login';
 import { Onboarding } from './pages/Onboarding';
 import { History } from './pages/History';
 import { Profile } from './pages/Profile';
 import { subscribeToAuth, downloadDataFromCloud, uploadDataToCloud } from './services/cloud';
-import { getTodayKey } from './services/storage';
+import { getTodayKey, hasConfiguredFeatures } from './services/storage';
 import { SplashScreen } from './components/SplashScreen';
 import { TimerProvider } from './context/TimerContext';
 import { ToastProvider } from './context/ToastContext';
@@ -114,6 +114,7 @@ const App: React.FC = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [showSplash, setShowSplash] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   useEffect(() => {
     // 1. Check Firebase Auth State
@@ -128,6 +129,13 @@ const App: React.FC = () => {
           console.log("Data sync complete.");
         } catch (error) {
           console.error("Failed to sync on startup:", error);
+        }
+        
+        // 3. Check if user needs onboarding (no features configured locally after sync)
+        if (!hasConfiguredFeatures()) {
+           setNeedsOnboarding(true);
+        } else {
+           setNeedsOnboarding(false);
         }
       }
       
@@ -157,7 +165,16 @@ const App: React.FC = () => {
     return <Login />;
   }
 
-  // If user is authenticated, show the App
+  // New User Guard: Show Onboarding if no configuration found
+  if (needsOnboarding) {
+    return (
+      <HashRouter>
+        <Onboarding onComplete={() => setNeedsOnboarding(false)} />
+      </HashRouter>
+    );
+  }
+
+  // If user is authenticated and onboarded, show the App
   return (
     <ToastProvider>
       <TimerProvider>

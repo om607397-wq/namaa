@@ -358,9 +358,15 @@ export const saveFootballLog = (log: FootballTrainingLog) => {
   set(KEYS.FOOTBALL_LOGS, logs);
 };
 
+// Check if user has explicitly saved features before
+export const hasConfiguredFeatures = (): boolean => {
+  return localStorage.getItem(KEYS.ENABLED_FEATURES) !== null;
+}
+
 export const getEnabledFeatures = (): FeatureId[] => {
   const features = get<FeatureId[] | null>(KEYS.ENABLED_FEATURES, null);
   if (!features) {
+    // Default features if not set (fallback)
     return ['prayers', 'quran', 'habits', 'study', 'finance', 'focus', 'tasbeeh', 'adhkar', 'history', 'todo']; 
   }
   return features;

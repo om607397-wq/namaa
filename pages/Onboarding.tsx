@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import { 
@@ -23,10 +22,15 @@ const FEATURES: { id: FeatureId; label: string; icon: any; desc: string; color: 
   { id: 'screentime', label: 'موبايلي', icon: Smartphone, desc: 'التحكم في استخدام الهاتف', color: 'bg-slate-600' },
   { id: 'tasbeeh', label: 'السبحة', icon: Loader2, desc: 'عداد أذكار بسيط', color: 'bg-cyan-600' },
   { id: 'journaling', label: 'اليوميات', icon: CalendarCheck, desc: 'تقييم يومي وأسبوعي', color: 'bg-orange-500' },
-  { id: 'history', label: 'السجل', icon: CalendarDays, desc: 'تقويم الإنجاز السابق', color: 'bg-gray-500' }, // Added History
+  { id: 'history', label: 'السجل', icon: CalendarDays, desc: 'تقويم الإنجاز السابق', color: 'bg-gray-500' },
+  { id: 'todo', label: 'قائمة المهام', icon: CheckCircle2, desc: 'قائمة مهام بسيطة', color: 'bg-teal-600' },
 ];
 
-export const Onboarding: React.FC = () => {
+interface OnboardingProps {
+  onComplete?: () => void;
+}
+
+export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   const navigate = useNavigate();
   const [selected, setSelected] = useState<FeatureId[]>([]);
 
@@ -47,7 +51,11 @@ export const Onboarding: React.FC = () => {
 
   const handleSave = () => {
     saveEnabledFeatures(selected);
-    navigate('/');
+    if (onComplete) {
+      onComplete();
+    } else {
+      navigate('/');
+    }
   };
 
   return (
@@ -55,10 +63,10 @@ export const Onboarding: React.FC = () => {
       <div className="max-w-4xl w-full space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-20">
         
         {/* Header */}
-        <div className="text-center space-y-4">
-           <h1 className="text-4xl font-black text-gray-900 dark:text-white">صمم مساحتك الخاصة 🎨</h1>
+        <div className="text-center space-y-4 pt-10">
+           <h1 className="text-4xl font-black text-gray-900 dark:text-white">أهلاً بك في نماء 👋</h1>
            <p className="text-lg text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
-             نماء تطبيق مرن. اختر الأدوات التي تحتاجها فقط ليكون التطبيق بسيطاً ومركزاً على أهدافك.
+             لنقم بتهيئة مساحتك الخاصة. اختر الأدوات التي تهمك الآن ليكون التطبيق بسيطاً ومركزاً عليك.
            </p>
         </div>
 
@@ -101,7 +109,7 @@ export const Onboarding: React.FC = () => {
              disabled={selected.length === 0}
              className="pointer-events-auto bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-8 py-4 rounded-full font-bold text-lg shadow-2xl hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
            >
-             حفظ ومتابعة <ArrowRight size={20} className="rotate-180" />
+             {onComplete ? 'ابدأ الرحلة' : 'حفظ التغييرات'} <ArrowRight size={20} className="rotate-180" />
            </button>
         </div>
 
