@@ -8,6 +8,8 @@ import {
   onAuthStateChanged,
   setPersistence,
   browserLocalPersistence,
+  GoogleAuthProvider,
+  signInWithPopup,
   User
 } from "firebase/auth";
 import { getAllAppData, restoreAppData, getProfile } from "./storage";
@@ -55,23 +57,48 @@ if (app) {
 
 // --- Auth Functions ---
 
+// Helper to clear only App Data, keeping Settings (like Dark Mode) if desired
+export const clearLocalData = () => {
+  Object.keys(localStorage).forEach(key => {
+    // Remove all keys starting with 'injaz_' EXCEPT 'injaz_settings' (to keep theme)
+    if (key.startsWith('injaz_') && key !== 'injaz_settings') {
+       localStorage.removeItem(key);
+    }
+  });
+};
+
 export const registerUser = async (email: string, pass: string) => {
   if (!auth) throw new Error("Firebase Auth not initialized");
+  // CRITICAL: Clear old data before registering a new user
+  clearLocalData();
   return await createUserWithEmailAndPassword(auth, email, pass);
 };
 
 export const loginUser = async (email: string, pass: string) => {
   if (!auth) throw new Error("Firebase Auth not initialized");
-  // Persistence is already set on init, but we proceed with login
+  // We don't clear data here immediately, we rely on downloadDataFromCloud to overwrite it,
+  // or the Login page useEffect to clear it on mount.
   return await signInWithEmailAndPassword(auth, email, pass);
+};
+
+export const loginWithGoogle = async () => {
+  if (!auth) throw new Error("Firebase Auth not initialized");
+  const provider = new GoogleAuthProvider();
+  // CRITICAL: Clear old data before google login
+  clearLocalData();
+  return await signInWithPopup(auth, provider);
 };
 
 export const logoutUser = async () => {
   if (!auth) return;
+  
+  // CRITICAL FIX: Clear local storage data on logout
+  // This prevents the "sticky account" issue where a new user sees old user's data
+  clearLocalData();
+
   await signOut(auth);
-  // Optional: clear local storage on logout to prevent data leak
-  // localStorage.clear(); 
-  // window.location.reload();
+  // Force reload to clear React state and ensure clean slate
+  window.location.reload();
 };
 
 export const subscribeToAuth = (callback: (user: User | null) => void) => {
@@ -118,17 +145,20 @@ export const downloadDataFromCloud = async () => {
     if (docSnap.exists()) {
       const remoteData = docSnap.data();
       if (remoteData.data) {
+        // Clear local data before restoring to ensure no mixing
+        clearLocalData();
         const parsedData = JSON.parse(remoteData.data);
         restoreAppData(parsedData);
         console.log("Cloud data restored successfully");
         return true;
       }
     } else {
-      console.log("No cloud data found, using local defaults.");
+      console.log("No cloud data found, using fresh start.");
+      // Ensure we are not showing OLD data from localStorage if cloud has nothing
+      clearLocalData();
     }
   } catch (e) {
     console.warn("Error downloading data (might be permission or network):", e);
-    // Return false but don't crash app
     return false;
   }
   return false;
